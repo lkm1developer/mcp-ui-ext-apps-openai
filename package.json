@@ -1,0 +1,60 @@
+{
+  "name": "mcp-ui-ext-apps-openai",
+  "version": "1.0.0",
+  "description": "Unified utility for building apps that work on both OpenAI ChatGPT and MCP Apps platforms",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    },
+    "./react": {
+      "types": "./dist/react.d.ts",
+      "import": "./dist/react.mjs",
+      "require": "./dist/react.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "mcp",
+    "openai",
+    "chatgpt",
+    "unified",
+    "cross-platform",
+    "react",
+    "widget"
+  ],
+  "author": "lkm1developer",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lkm1developer/mcp-ui-ext-apps-openai.git"
+  },
+  "bugs": {
+    "url": "https://github.com/lkm1developer/mcp-ui-ext-apps-openai/issues"
+  },
+  "homepage": "https://github.com/lkm1developer/mcp-ui-ext-apps-openai#readme",
+  "peerDependencies": {
+    "@modelcontextprotocol/ext-apps": ">=0.1.0",
+    "react": ">=18.0.0"
+  },
+  "devDependencies": {
+    "@modelcontextprotocol/ext-apps": "^0.3.0",
+    "@types/react": "^18.2.0",
+    "react": "^18.2.0",
+    "tsup": "^8.0.0",
+    "typescript": "^5.0.0"
+  }
+}
