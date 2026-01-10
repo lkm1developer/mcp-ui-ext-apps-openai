@@ -36,7 +36,7 @@ function CounterApp() {
   } = useUnifiedApp({
     appInfo: APP_INFO,
     capabilities: {},
-    onError: (e) => console.error("[CounterApp]", e),
+    onError: (e:any) => console.error("[CounterApp]", e),
   });
 
   const [error, setError] = useState<string | null>(null);
