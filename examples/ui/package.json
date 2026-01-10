@@ -1,7 +1,8 @@
 {
-  "name": "apps",
+  "name": "counter-ui-example",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
+  "description": "Counter React UI example for mcp-ui-ext-apps-openai",
   "type": "module",
   "scripts": {
     "dev": "vite",

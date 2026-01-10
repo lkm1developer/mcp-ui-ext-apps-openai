@@ -224,3 +224,72 @@ if (data.status) {
 ## License
 
 MIT
+
+## Examples
+
+The `examples/` directory contains a complete counter app example:
+
+### Structure
+
+```
+examples/
+├── server/          # MCP server with counter tools
+│   ├── server.ts    # Express + MCP server
+│   └── package.json
+└── ui/              # React counter app
+    ├── src/main.tsx # Counter UI using useUnifiedApp
+    └── package.json
+```
+
+### Server Example (`examples/server/`)
+
+A fully-featured MCP server that:
+- Auto-detects OpenAI vs MCP Apps clients via user-agent
+- Uses proper MIME types (`text/html+skybridge` for OpenAI, standard for MCP)
+- Registers resources with `registerAppResource`
+- Registers tools with `registerAppTool`
+- Manages sessions (stateful, 5 min timeout)
+
+**Tools:**
+- `counter` - Widget tool with resource binding
+- `get-counter` - Returns `{ status: true, value: number }`
+- `set-counter` - Accepts `{ value: number }`, returns `{ status: true, value: number }`
+
+**Run:**
+```bash
+cd examples/server
+npm install
+npm run dev  # Starts on http://localhost:3001
+```
+
+### UI Example (`examples/ui/`)
+
+A React counter app that:
+- Uses `useUnifiedApp` hook for cross-platform support
+- Initializes from `initialProps` (OpenAI) or fetches via `get-counter` (MCP)
+- Shows counter with +/- buttons
+- Optimistically updates UI, reverts on error
+- Persists changes via `set-counter` tool
+
+**Run:**
+```bash
+cd examples/ui
+npm install
+npm run build  # Builds to dist/index.html
+```
+
+The built `dist/index.html` is served by the server as the widget HTML resource.
+
+### Running the Full Example
+
+1. Build the UI:
+   ```bash
+   cd examples/ui && npm install && npm run build
+   ```
+
+2. Start the server:
+   ```bash
+   cd examples/server && npm install && npm run dev
+   ```
+
+3. Connect from OpenAI ChatGPT or MCP Apps client to `http://localhost:3001/mcp`
