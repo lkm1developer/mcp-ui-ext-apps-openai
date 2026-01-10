@@ -11,7 +11,7 @@
  * 4. Handle tool result - show error if status is false
  */
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
-import { StrictMode, useCallback, useEffect, useState } from "react";
+import { StrictMode, useCallback, useEffect, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { useUnifiedApp } from "mcp-ui-ext-apps-openai/react";
 
@@ -42,6 +42,9 @@ function CounterApp() {
   const [error, setError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
+  // Track initialization to run only once
+  const initializedRef = useRef(false);
+
   // Get counter value from widget state
   const counter = (widgetState as { value?: number } | null)?.value ?? 0;
 
@@ -55,12 +58,12 @@ function CounterApp() {
 
     try {
       const result = await app.callServerTool({ name: "get-counter", arguments: {} });
-      const data = (result as CallToolResult).structuredContent as unknown as CounterData;
+      const data = (result as CallToolResult | null)?.structuredContent as CounterData | undefined;
 
-      if (data.status && data.value !== undefined) {
+      if (data?.status && data.value !== undefined) {
         setWidgetState({ value: data.value });
       } else {
-        setError(data.error || "Failed to get counter");
+        setError(data?.error || "Failed to get counter");
       }
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed to get counter");
@@ -68,14 +71,17 @@ function CounterApp() {
   }, [app, setWidgetState]);
 
   /**
-   * Initialize counter from initialProps or fetch from server
+   * Initialize counter from initialProps or fetch from server (runs only once)
    */
   useEffect(() => {
-    if (!app || !isConnected) return;
+    if (!app || !isConnected || initializedRef.current) return;
+
+    initializedRef.current = true;
 
     // Check if we have initial props (OpenAI case with toolOutput as CallToolResult)
-    if (initialProps !== undefined) {
-      const data = (initialProps as CallToolResult).structuredContent as unknown as CounterData | undefined;
+    // Note: initialProps can be null or undefined, so check both
+    if (initialProps != null) {
+      const data = (initialProps as CallToolResult | null)?.structuredContent as CounterData | undefined;
       if (data?.status && data.value !== undefined) {
         setWidgetState({ value: data.value });
         return;
@@ -104,12 +110,12 @@ function CounterApp() {
         name: "set-counter",
         arguments: { value: newValue }
       });
-      const data = (result as CallToolResult).structuredContent as unknown as CounterData;
+      const data = (result as CallToolResult | null)?.structuredContent as CounterData | undefined;
 
-      if (!data.status) {
+      if (!data?.status) {
         // Revert on error
         setWidgetState({ value: counter });
-        setError(data.error || "Failed to save counter");
+        setError(data?.error || "Failed to save counter");
       }
     } catch (e) {
       // Revert on error
@@ -138,12 +144,12 @@ function CounterApp() {
         name: "set-counter",
         arguments: { value: newValue }
       });
-      const data = (result as CallToolResult).structuredContent as unknown as CounterData;
+      const data = (result as CallToolResult | null)?.structuredContent as CounterData | undefined;
 
-      if (!data.status) {
+      if (!data?.status) {
         // Revert on error
         setWidgetState({ value: counter });
-        setError(data.error || "Failed to save counter");
+        setError(data?.error || "Failed to save counter");
       }
     } catch (e) {
       // Revert on error

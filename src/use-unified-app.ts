@@ -128,6 +128,13 @@ export function useUnifiedApp(options: UseUnifiedAppOptions): UseUnifiedAppResul
   // React state for widgetState - works on both platforms
   const [localWidgetState, setLocalWidgetState] = useState<unknown>(null);
 
+  // Track if we set widget state ourselves (to prevent sync loop)
+  const isOurUpdateRef = useRef(false);
+
+  // Store unifiedApp in ref for stable callbacks
+  const unifiedAppRef = useRef<UnifiedApp | null>(null);
+  unifiedAppRef.current = unifiedApp;
+
   // OpenAI reactive globals
   const openaiWidgetState = useOpenAIGlobal<unknown>("widgetState", null);
   const openaiWidgetProps = useOpenAIGlobal<Record<string, unknown>>("widget", {});
@@ -140,28 +147,32 @@ export function useUnifiedApp(options: UseUnifiedAppOptions): UseUnifiedAppResul
   const optionsRef = useRef(options);
   optionsRef.current = options;
 
-  // Sync OpenAI widgetState to local state when it changes
+  // Sync OpenAI widgetState to local state when it changes (only if not caused by us)
   useEffect(() => {
     if (platform === "openai" && openaiWidgetState !== null) {
-      setLocalWidgetState(openaiWidgetState);
+      if (!isOurUpdateRef.current) {
+        setLocalWidgetState(openaiWidgetState);
+      }
+      isOurUpdateRef.current = false;
     }
   }, [platform, openaiWidgetState]);
 
-  // Widget state setters - work on both platforms via React state
-  // Also syncs to OpenAI if on that platform
+  // Widget state setters - stable callbacks using refs
   const setWidgetState = useCallback(<T = unknown>(state: T) => {
     setLocalWidgetState(state);
-    if (unifiedApp && platform === "openai") {
-      unifiedApp.setWidgetState(state);
+    if (platform === "openai" && unifiedAppRef.current) {
+      isOurUpdateRef.current = true;
+      unifiedAppRef.current.setWidgetState(state);
     }
-  }, [unifiedApp, platform]);
+  }, [platform]);
 
   const updateWidgetState = useCallback(<T = unknown>(state: Partial<T>) => {
     setLocalWidgetState((prev: unknown) => ({ ...(prev as object), ...state }));
-    if (unifiedApp && platform === "openai") {
-      unifiedApp.updateWidgetState(state);
+    if (platform === "openai" && unifiedAppRef.current) {
+      isOurUpdateRef.current = true;
+      unifiedAppRef.current.updateWidgetState(state);
     }
-  }, [unifiedApp, platform]);
+  }, [platform]);
 
   // Update host context from OpenAI globals
   useEffect(() => {
