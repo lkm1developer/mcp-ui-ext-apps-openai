@@ -1,6 +1,6 @@
 {
   "name": "mcp-ui-ext-apps-openai",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Unified utility for building apps that work on both OpenAI ChatGPT and MCP Apps platforms",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
