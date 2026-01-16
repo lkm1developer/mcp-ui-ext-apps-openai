@@ -126,7 +126,14 @@ export function useUnifiedApp(options: UseUnifiedAppOptions): UseUnifiedAppResul
   const [hostContext, setHostContext] = useState<UnifiedHostContext | undefined>();
 
   // React state for widgetState - works on both platforms
-  const [localWidgetState, setLocalWidgetState] = useState<unknown>(null);
+  // Initialize from OpenAI's toolOutput (initialProps) if available
+  const [localWidgetState, setLocalWidgetState] = useState<unknown>(() => {
+    if (platform === "openai" && typeof window !== "undefined" && window.openai) {
+      const openai = window.openai as unknown as Record<string, unknown>;
+      return openai.toolOutput ?? openai.widgetState ?? null;
+    }
+    return null;
+  });
 
   // Track if we set widget state ourselves (to prevent sync loop)
   const isOurUpdateRef = useRef(false);

@@ -309,7 +309,7 @@ setInterval(() => {
 
 // ==================== EXPRESS SERVER ====================
 
-const port = parseInt(process.env.PORT || "3001", 10);
+const port = parseInt(process.env.PORT || "7007", 10);
 
 const app = express();
 app.use(cors());
