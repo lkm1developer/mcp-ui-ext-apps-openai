@@ -264,11 +264,6 @@ export function useUnifiedApp(options: UseUnifiedAppOptions): UseUnifiedAppResul
             await opts.onToolResult?.(result as UnifiedToolResult);
           };
 
-          mcpApp.onerror = (err) => {
-            console.error(`[${opts.appInfo.name}]`, err);
-            opts.onError?.(err instanceof Error ? err : new Error(String(err)));
-          };
-
           mcpApp.onhostcontextchanged = (params) => {
             if (mounted) {
               setHostContext((prev) => {
@@ -299,10 +294,12 @@ export function useUnifiedApp(options: UseUnifiedAppOptions): UseUnifiedAppResul
           }
         } catch (err) {
           console.error(`[${opts.appInfo.name}]`, err);
+          const error = err instanceof Error ? err : new Error("Failed to connect");
           if (mounted) {
-            setError(err instanceof Error ? err : new Error("Failed to connect"));
+            setError(error);
             setIsConnected(false);
           }
+          opts.onError?.(error);
         }
       }
     }
