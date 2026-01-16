@@ -39,11 +39,9 @@ export interface UseUnifiedAppResult {
   platform: Platform;
   /** Current host context (theme, displayMode, locale, etc.) */
   hostContext: UnifiedHostContext | undefined;
-  /** Initial props from toolOutput (OpenAI only, undefined on MCP) - use as initial data for component */
-  initialProps: unknown;
   /** Widget props (OpenAI only, reactive) */
   widgetProps: Record<string, unknown>;
-  /** Widget state - works on both platforms via React state */
+  /** Widget state - initialized from toolOutput on mount, works on both platforms via React state */
   widgetState: unknown;
   /** Set widget state - works on both platforms (also syncs to OpenAI if on that platform) */
   setWidgetState: <T = unknown>(state: T) => void;
@@ -153,6 +151,15 @@ export function useUnifiedApp(options: UseUnifiedAppOptions): UseUnifiedAppResul
   // Store options in ref to avoid stale closures
   const optionsRef = useRef(options);
   optionsRef.current = options;
+
+  // Initialize localWidgetState from initialProps (toolOutput) on first mount for OpenAI
+  const hasInitialized = useRef(false);
+  useEffect(() => {
+    if (platform === "openai" && !hasInitialized.current && openaiToolOutput !== undefined) {
+      setLocalWidgetState(openaiToolOutput);
+      hasInitialized.current = true;
+    }
+  }, [platform, openaiToolOutput]);
 
   // Sync OpenAI widgetState to local state when it changes (only if not caused by us)
   useEffect(() => {
@@ -317,7 +324,6 @@ export function useUnifiedApp(options: UseUnifiedAppOptions): UseUnifiedAppResul
 
   // Return platform-appropriate values
   const widgetProps = platform === "openai" ? ((openaiWidgetProps as { props?: Record<string, unknown> })?.props || {}) : {};
-  const initialProps = platform === "openai" ? openaiToolOutput : undefined;
 
   return {
     app: unifiedApp,
@@ -325,7 +331,6 @@ export function useUnifiedApp(options: UseUnifiedAppOptions): UseUnifiedAppResul
     error,
     platform: finalPlatform,
     hostContext,
-    initialProps,
     widgetProps,
     widgetState: localWidgetState,
     setWidgetState,
